@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0f766e" />
+    <title>تسجيل الدخول | إدارة العنابر</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="login-page">
+    <main class="login-wrap">
+      <section class="login-card">
+        <div class="login-mark" aria-hidden="true">🐔</div>
+        <h1>إدارة العنابر</h1>
+        <p class="sm login-subtitle">سجّل الدخول بحساب المالك للمتابعة</p>
+        <form id="login-form">
+          <label for="auth-email">البريد الإلكتروني</label>
+          <input
+            id="auth-email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            placeholder="name@example.com"
+            required
+          />
+          <label for="auth-password">كلمة المرور</label>
+          <div class="password-wrap">
+            <input
+              id="auth-password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="أدخل كلمة المرور"
+              required
+            />
+            <button
+              type="button"
+              id="toggle-password"
+              class="password-toggle"
+              aria-label="إظهار كلمة المرور"
+            >
+              إظهار
+            </button>
+          </div>
+          <div
+            id="login-status"
+            class="login-status"
+            role="status"
+            aria-live="polite"
+          >
+            أدخل بيانات حساب Supabase Auth المضاف إلى قائمة المالكين.
+          </div>
+          <button type="submit" id="auth-login" class="g login-submit">
+            تسجيل الدخول
+          </button>
+        </form>
+        <p class="sm login-foot">الدخول متاح للحسابات المسجلة كمالك فقط.</p>
+      </section>
+    </main>
+    <script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"
+  onerror="document.getElementById('login-status').textContent='فشل تحميل مكتبة Supabase. تحقق من اتصال الإنترنت.'"
+></script>
+
+<script src="js/supabase.js"></script>
+  </body>
+</html>

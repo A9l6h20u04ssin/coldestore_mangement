@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>إدارة العنابر</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <main id="app-shell" style="display: none">
+      <div class="bar">
+        <h1>إدارة العنابر</h1>
+        <div class="mn">
+          <button onclick="mv(-1)">›</button><span id="ml"></span
+          ><button onclick="mv(1)">‹</button>
+        </div>
+        <button onclick="tm()">🌓 الوضع</button>
+      </div>
+      <div class="card" id="connection-card">
+        <b>الاتصال بقاعدة البيانات</b>
+        <div class="sm" id="connection-status">
+          جارٍ التحقق من جلسة الدخول...
+        </div>
+        <div class="fm"><button id="auth-logout">تسجيل الخروج</button></div>
+      </div>
+      <div class="tabs" id="tb"></div>
+
+      <div class="sec" id="s0">
+        <div id="al"></div>
+        <div class="sm" id="rg"></div>
+        <div class="grid" id="cd"></div>
+        <div class="card wrap">
+          <b>حالة العنابر</b>
+          <table id="wt"></table>
+        </div>
+        <div class="card wrap">
+          <b>حركات الشهر</b>
+          <table id="lg"></table>
+        </div>
+        <div class="card">
+          <b>نسخة احتياطية</b>
+          <div class="acts">
+            <button onclick="bk()">تجهيز النسخة</button
+            ><button onclick="rs()">استرجاع من النص</button>
+          </div>
+          <textarea
+            id="bx"
+            rows="3"
+            style="width: 100%; margin-top: 6px"
+            placeholder="انسخ النص ده واحفظه، ولاسترجاع الصق النسخة هنا واضغط استرجاع"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="sec" id="s1">
+        <div id="al2"></div>
+        <div class="card">
+          <b id="ct">شركة جديدة</b>
+          <div class="fm"><input id="cn" placeholder="اسم الشركة" /></div>
+          <div class="sm">العنابر (ممكن أكتر من عنبر):</div>
+          <div class="fm" id="wb"></div>
+          <div class="fm">
+            <input id="cs" type="date" /><input
+              id="cy"
+              type="number"
+              step="any"
+              placeholder="عدد السنين"
+            /><input
+              id="ct2"
+              type="number"
+              step="any"
+              placeholder="السعر الكلي"
+            /><input
+              id="cm"
+              type="number"
+              step="any"
+              placeholder="الدفع الشهري (اختياري)"
+            />
+          </div>
+          <div class="fm">
+            <label class="sm"
+              >صورة العقد: <input id="ci" type="file" accept="image/*"
+            /></label>
+          </div>
+          <div class="acts">
+            <button class="g" onclick="addCo()">حفظ</button
+            ><button onclick="rstC()">إلغاء</button>
+          </div>
+        </div>
+        <div class="fr">
+          <input id="q1" placeholder="بحث بالاسم" oninput="R()" /><input
+            id="a1"
+            type="number"
+            step="any"
+            placeholder="الشهري من"
+            oninput="R()"
+          /><input
+            id="b1"
+            type="number"
+            step="any"
+            placeholder="إلى"
+            oninput="R()"
+          />
+        </div>
+        <div id="l1"></div>
+      </div>
+
+      <div class="sec" id="s2">
+        <div class="card">
+          <b>عامل شهري جديد</b>
+          <div class="fm">
+            <input id="wn" placeholder="الاسم" /><input
+              id="wa"
+              type="number"
+              step="any"
+              placeholder="المرتب الأساسي"
+            /><button class="g" onclick="addW()">إضافة</button>
+          </div>
+        </div>
+        <div class="fr">
+          <input id="q2" placeholder="بحث بالاسم" oninput="R()" /><input
+            id="a2"
+            type="number"
+            step="any"
+            placeholder="الصافي من"
+            oninput="R()"
+          /><input
+            id="b2"
+            type="number"
+            step="any"
+            placeholder="إلى"
+            oninput="R()"
+          />
+        </div>
+        <div class="card" id="t2"></div>
+        <div id="l2"></div>
+      </div>
+
+      <div class="sec" id="s3">
+        <div class="card">
+          <b>عامل يومية</b>
+          <div class="fm">
+            <input id="dn" placeholder="الاسم" /><input
+              id="dr"
+              type="number"
+              step="any"
+              placeholder="اليومية"
+            /><input
+              id="dd"
+              type="number"
+              step="any"
+              placeholder="عدد الأيام"
+            /><button class="g" onclick="addD()">إضافة</button>
+          </div>
+        </div>
+        <div class="fr">
+          <input id="q3" placeholder="بحث بالاسم" oninput="R()" /><input
+            id="a3"
+            type="number"
+            step="any"
+            placeholder="الإجمالي من"
+            oninput="R()"
+          /><input
+            id="b3"
+            type="number"
+            step="any"
+            placeholder="إلى"
+            oninput="R()"
+          />
+        </div>
+        <div class="card" id="t3"></div>
+        <div id="l3"></div>
+      </div>
+
+      <div class="sec" id="s4">
+        <div class="card">
+          <b>مصروف جديد</b>
+          <div class="fm">
+            <select
+              id="et"
+              onchange="$('eo').style.display=this.value=='أخرى'?'':'none'"
+            ></select
+            ><input
+              id="eo"
+              placeholder="اكتب نوع المصروف"
+              style="display: none"
+            /><input
+              id="ea"
+              type="number"
+              step="any"
+              placeholder="المبلغ"
+            /><input id="en" placeholder="ملاحظة" /><button
+              class="g"
+              onclick="addE()"
+            >
+              إضافة
+            </button>
+          </div>
+        </div>
+        <div class="fr">
+          <select id="ef" onchange="R()"></select
+          ><input id="q4" placeholder="بحث في الملاحظة" oninput="R()" /><input
+            id="a4"
+            type="number"
+            step="any"
+            placeholder="المبلغ من"
+            oninput="R()"
+          /><input
+            id="b4"
+            type="number"
+            step="any"
+            placeholder="إلى"
+            oninput="R()"
+          />
+        </div>
+        <div class="card" id="t4"></div>
+        <div id="l4"></div>
+      </div>
+      <div id="ov" onclick="this.style.display='none'"><img id="oi" /></div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </body>
+</html>
