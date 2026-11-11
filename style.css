@@ -1,4 +1,43 @@
+@media (max-width: 768px) {
+  /* إجبار الحاوية على بقاء العناصر بجانب بعضها أفقياً */
+  .fr {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    width: 100% !important;
+    overflow-x: auto !important; /* السماح بسحب خفيف لو الشاشة صغيرة جداً */
+    padding-bottom: 4px;
+  }
 
+  /* توزيع خانات الإدخال بالتساوي لتنضغط بجانب بعضها */
+  .fr input {
+    flex: 1 !important;
+    min-width: 0 !important; /* لمنع تخطي الحقول لعرض الشاشة */
+    width: auto !important;
+    padding: 8px 6px !important;
+    font-size: 11px !important; /* تصغير الخط قليلاً لتتناسب المساحة */
+    border-radius: 6px !important;
+  }
+}
+@media (max-width: 768px) {
+  /* إجبار الحاوية .fm على البقاء في سطر أفقي واحد */
+  .fm {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+  /* جعل العناصر أو الحقول داخلها تتوزع بجانب بعضها بالتساوي */
+  .fm input, .fm label {
+    flex: 1 !important;
+    min-width: 0 !important;
+    font-size: 11px !important;
+    padding: 6px 4px !important;
+  }
+}
 :root {
   --bg: #f4f5f7;
   --c: #fff;
