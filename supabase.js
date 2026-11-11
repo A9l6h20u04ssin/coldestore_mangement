@@ -43,6 +43,7 @@
     return client;
   }
 
+  // التحقق من الصلاحيات بناءً على جدول user_roles الجديد
   async function ownerOnly() {
     const sb = requireClient();
     const {
@@ -53,19 +54,20 @@
     if (sessionError) throw sessionError;
     if (!session) return false;
 
-    const { data, error } = await sb.rpc("is_app_owner");
+    const user = session.user;
 
-    if (error)
-      throw new Error(
-        "تعذر التحقق من صلاحية المالك. تأكد من وجود دالة is_app_owner وسياسات قاعدة البيانات."
-      );
+    // التحقق من جدول user_roles المخصص بناءً على user_id و role
+    const { data: roleData, error: roleError } = await sb
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-    if (!data) {
-      await sb.auth.signOut();
-      throw new Error("الحساب غير مسجل كمالك في private.app_owners.");
+    if (!roleError && roleData && roleData.role === "admin") {
+      return true;
     }
 
-    return true;
+    throw new Error("الحساب غير مسجل كمدير (Admin) في جدول الصلاحيات.");
   }
 
   async function signIn(email, password) {
@@ -74,7 +76,7 @@
     if (!email.trim() || !password)
       throw new Error("اكتب البريد الإلكتروني وكلمة المرور.");
 
-    const { error } = await sb.auth.signInWithPassword({
+    const { data, error } = await sb.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
@@ -86,11 +88,8 @@
           : error.message
       );
 
-    const isOwner = await ownerOnly();
-
-    if (!isOwner) {
-      await sb.auth.signOut();
-      throw new Error("لم يتم العثور على جلسة دخول صالحة.");
+    if (!data.session) {
+      throw new Error("تعذر إنشاء جلسة دخول.");
     }
 
     location.replace("index.html");
@@ -105,16 +104,11 @@
 
   async function refreshAuthUI() {
     if (!client) {
-      showMessage(
-        "الاتصال غير مُعدّ: أضف Project URL و anon/publishable key في js/supabase.js."
-      );
-
+      showMessage("الاتصال بقاعدة البيانات غير مُعدّ.");
       const submit = $("auth-login");
       if (submit) submit.disabled = true;
-
       const shell = $("app-shell");
       if (shell) shell.style.display = "none";
-
       return;
     }
 
@@ -127,19 +121,11 @@
       if (error) throw error;
 
       if (!session) {
-        if (isLoginPage)
-          showMessage(
-            "أدخل بيانات حساب Supabase Auth المضاف إلى قائمة المالكين."
-          );
-        else location.replace("login.html");
-
-        return;
-      }
-
-      const owner = await ownerOnly();
-
-      if (!owner) {
-        if (!isLoginPage) location.replace("login.html");
+        if (isLoginPage) {
+          showMessage("سجّل الدخول للمتابعة.");
+        } else {
+          location.replace("login.html");
+        }
         return;
       }
 
@@ -151,23 +137,17 @@
       const shell = $("app-shell");
       if (shell) shell.style.display = "";
 
-      showMessage(
-        `متصل بحساب ${session.user.email} — تم التحقق من صلاحية المالك.`,
-        true
-      );
+      showMessage(`متصل بحساب ${session.user.email}`, true);
     } catch (e) {
+      console.error("AUTH ERROR:", e);
       showMessage(e.message || "تعذر التحقق من الحساب.");
-
-      if (!isLoginPage) {
-        const shell = $("app-shell");
-        if (shell) shell.style.display = "none";
-      }
+      const shell = $("app-shell");
+      if (shell) shell.style.display = "none";
     }
   }
 
   async function select(table, query = "*", options = {}) {
     const sb = requireClient();
-
     if (!(await ownerOnly()))
       throw new Error("سجّل الدخول بحساب المالك أولًا.");
 
@@ -184,7 +164,6 @@
 
     const { data, error } = await request;
     if (error) throw error;
-
     return data;
   }
 
@@ -235,54 +214,7 @@
       throw new Error("سجّل الدخول بحساب المالك أولًا.");
 
     const { error } = await requireClient().from(table).delete().eq("id", id);
-
     if (error) throw error;
-  }
-
-  async function uploadContractFile(file, contractId) {
-    if (!(await ownerOnly()))
-      throw new Error("سجّل الدخول بحساب المالك أولًا.");
-
-    const allowed = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "application/pdf",
-    ];
-
-    if (!allowed.includes(file.type))
-      throw new Error("نوع الملف غير مسموح. استخدم JPG أو PNG أو WEBP أو PDF.");
-
-    if (file.size > 10 * 1024 * 1024)
-      throw new Error("الحد الأقصى لحجم الملف 10 ميجابايت.");
-
-    const ext = (file.name.split(".").pop() || "bin")
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "");
-
-    const path = `${contractId}/${crypto.randomUUID()}.${ext}`;
-
-    const { error } = await requireClient()
-      .storage.from("contract-files")
-      .upload(path, file, {
-        upsert: false,
-        contentType: file.type,
-      });
-
-    if (error) throw error;
-    return path;
-  }
-
-  async function signedContractFile(path, expiresIn = 300) {
-    if (!(await ownerOnly()))
-      throw new Error("سجّل الدخول بحساب المالك أولًا.");
-
-    const { data, error } = await requireClient()
-      .storage.from("contract-files")
-      .createSignedUrl(path, expiresIn);
-
-    if (error) throw error;
-    return data.signedUrl;
   }
 
   window.AppSupabase = {
@@ -299,23 +231,17 @@
     upsert,
     update,
     remove,
-    uploadContractFile,
-    signedContractFile,
   };
 
   document.addEventListener("DOMContentLoaded", () => {
     if (!window.supabase) {
-      showMessage(
-        "مكتبة Supabase لم يتم تحميلها. راجع ترتيب ملفات JavaScript."
-      );
+      showMessage("مكتبة Supabase لم يتم تحميلها. راجع ترتيب ملفات JavaScript.");
     }
 
     const loginForm = $("login-form");
-
     if (loginForm) {
       loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-
         const button = $("auth-login");
         if (button) button.disabled = true;
 
@@ -333,7 +259,6 @@
     }
 
     const logoutButton = $("auth-logout");
-
     if (logoutButton) {
       logoutButton.addEventListener("click", async () => {
         try {
@@ -341,17 +266,6 @@
         } catch (error) {
           showMessage(error.message || "تعذر تسجيل الخروج.");
         }
-      });
-    }
-
-    const toggle = $("toggle-password");
-
-    if (toggle) {
-      toggle.addEventListener("click", () => {
-        const password = $("auth-password");
-        if (!password) return;
-
-        password.type = password.type === "password" ? "text" : "password";
       });
     }
 
